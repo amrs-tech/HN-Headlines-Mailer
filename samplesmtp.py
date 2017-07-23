@@ -3,47 +3,37 @@ import requests as R
 from bs4 import BeautifulSoup as B
 import datetime
 
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+me = "me@gmail.com"
+you = "you@gmail.com"
+
+msg = MIMEMultipart('alternative')
+msg['Subject'] = 'HackerNews Headlines : '  +str(datetime.date.today())
+msg['From'] = me
+msg['To'] = you
+
 url = 'https://news.ycombinator.com'
 req = R.get(url)
 data = req.text
 soup = B(data,"html.parser")
 
-#lt_text = soup.find_all("a",class_ = 'storylink').string.strip()
-#lt_link = soup.find_all("a",class_ = 'storylink').get('href')
-
 lt_text = soup.find_all("a",class_ = 'storylink')
 
-email_text = ''
+html = '<div style="background-color:#ff6600;font-size:14px;padding:5px 20px 5px"><b>Hacker News | <a href="newest">new</a> | <a href="newcomments">comments</a> | <a href="show">show</a> | <a href="ask">as$
 
 for i in range(10):
-    email_text += str(i+1) + '. ' + lt_text[i].string + ' \n ' + lt_text[i].get('href') + ' \n '
+    html += '<p>' + str(i+1) + '. ' + '<a href="' +  lt_text[i].get('href')  + '">' + lt_text[i].string + ' </a></p>'
 
-#print(email_text.encode('utf-8'))
+html += '</div>' 
 
+part2 = MIMEText(html, 'html')
 
-email_text = email_text.encode('utf-8')
-
-subject = 'HackerNews Headlines : '+str(datetime.date.today())
-
-gmail_user = 'ahamedmusthafars@gmail.com'   #mailid
-gmail_password = '________' #password
-
-
-sent_from = gmail_user  
-to = ['ahamed.musthafa9@gmail.com']
-
-email_body = """From: %s\nTo: %s\nSubject: %s\n\n%s
-    """ % (sent_from, ", ".join(to), subject, email_text)
-
-
-try:  
-    server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-    server.ehlo()
-    server.login(gmail_user, gmail_password)
-    server.sendmail(sent_from, to, email_body)
-    server.close()
-
-    print ('Email sent!')
-except smtplib.SMTPAuthenticationError as e:  
-    print (e)
-
+msg.attach(part2)
+mail = smtplib.SMTP('smtp.gmail.com', 587)
+mail.ehlo()
+mail.starttls()
+mail.login('me@gmail.com', 'MYPASSWORD')
+mail.sendmail(me, you, msg.as_string())
+mail.quit()
