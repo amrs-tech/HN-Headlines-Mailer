@@ -33,7 +33,7 @@ sent_from = gmail_user
 to = ['ahamed.musthafa9@gmail.com']
 
 email_body = """From: %s\nTo: %s\nSubject: %s\n\n%s
-    """ % (sent_from, ", ".join(to), subject, str(email_text,'utf-8'))
+    """ % (sent_from, ", ".join(to), subject, email_text)
 
 
 try:  
